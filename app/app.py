@@ -542,38 +542,7 @@ PROJECT_KNOWLEDGE = {
         )
     }
 }
-st.markdown("---")
-st.subheader("📂 Batch Prediction")
 
-st.write(
-    "Upload a CSV file containing multiple customers to get predictions for all of them at once."
-)
-
-# Downloadable template
-sample_csv = """gender,SeniorCitizen,Partner,Dependents,tenure,PhoneService,MultipleLines,InternetService,OnlineSecurity,OnlineBackup,DeviceProtection,TechSupport,StreamingTV,StreamingMovies,Contract,PaperlessBilling,PaymentMethod,MonthlyCharges,TotalCharges
-Female,0,Yes,No,1,No,No phone service,DSL,No,Yes,No,No,No,No,Month-to-month,Yes,Electronic check,29.85,29.85
-Male,0,No,No,34,Yes,No,DSL,Yes,No,Yes,No,No,No,One year,No,Mailed check,56.95,1889.5
-Male,0,No,No,2,Yes,No,DSL,Yes,Yes,No,No,No,No,Month-to-month,Yes,Mailed check,53.85,108.15
-Male,0,No,No,45,No,No phone service,DSL,Yes,No,Yes,Yes,No,No,One year,No,Bank transfer (automatic),42.3,1840.75
-Female,0,No,No,2,Yes,No,Fiber optic,No,No,No,No,No,No,Month-to-month,Yes,Electronic check,70.7,151.65
-"""
-
-st.download_button(
-    label="📥 Download Sample CSV Template",
-    data=sample_csv,
-    file_name="sample_customers.csv",
-    mime="text/csv"
-)
-
-with st.expander("View required columns"):
-    st.code(
-        "gender, SeniorCitizen, Partner, Dependents, tenure, PhoneService, "
-        "MultipleLines, InternetService, OnlineSecurity, OnlineBackup, "
-        "DeviceProtection, TechSupport, StreamingTV, StreamingMovies, "
-        "Contract, PaperlessBilling, PaymentMethod, MonthlyCharges, TotalCharges"
-    )
-
-uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 # ============================================================
 # BATCH PREDICTION SECTION
 # ============================================================
