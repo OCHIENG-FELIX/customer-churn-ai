@@ -244,6 +244,307 @@ def clean_feature_names(explanation):
         "lower_risk_factors": lower_risk
 
     }
+def build_verified_payload(customer_data):
+
+    # --------------------------------
+    # 1. Get model assessment
+    # --------------------------------
+
+    assessment = assess_customer(customer_data)
+
+    # --------------------------------
+    # 2. Get customer explanation
+    # --------------------------------
+
+    explanation = explain_customer(customer_data)
+
+    # --------------------------------
+    # 3. Clean feature names
+    # --------------------------------
+
+    clean_explanation = clean_feature_names(
+        explanation
+    )
+
+    # --------------------------------
+    # 4. Build higher-risk signals
+    # --------------------------------
+
+    higher_risk = []
+
+    for _, row in clean_explanation[
+        "higher_risk_factors"
+    ].iterrows():
+
+        higher_risk.append({
+
+            "feature": row["Feature"],
+
+            "contribution": round(
+                float(row["Contribution"]),
+                3
+            )
+
+        })
+
+    # --------------------------------
+    # 5. Build lower-risk signals
+    # --------------------------------
+
+    lower_risk = []
+
+    for _, row in clean_explanation[
+        "lower_risk_factors"
+    ].iterrows():
+
+        lower_risk.append({
+
+            "feature": row["Feature"],
+
+            "contribution": round(
+                float(row["Contribution"]),
+                3
+            )
+
+        })
+
+    # --------------------------------
+    # 6. Build verified payload
+    # --------------------------------
+
+    verified_payload = {
+
+        "churn_probability": round(
+            float(assessment["churn_probability"]),
+            4
+        ),
+
+        "threshold": float(
+            assessment["threshold"]
+        ),
+
+        "prediction": assessment["prediction"],
+
+        "risk_level": assessment["risk_level"],
+
+        "higher_risk_signals": higher_risk,
+
+        "lower_risk_signals": lower_risk
+    }
+
+    return verified_payload
+
+def generate_business_response(verified_payload):
+
+    higher_risk_factors = [
+
+        item["feature"]
+
+        for item in verified_payload[
+            "higher_risk_signals"
+        ]
+    ]
+
+    lower_risk_factors = [
+
+        item["feature"]
+
+        for item in verified_payload[
+            "lower_risk_signals"
+        ]
+    ]
+
+
+    response = {
+
+        "risk_summary": (
+
+            f"Churn probability: "
+            f"{verified_payload['churn_probability']}, "
+
+            f"Decision threshold: "
+            f"{verified_payload['threshold']}, "
+
+            f"Prediction: "
+            f"{verified_payload['prediction']}, "
+
+            f"Risk Level: "
+            f"{verified_payload['risk_level']}"
+        ),
+
+        "strongest_factors": higher_risk_factors,
+
+        "lower_risk_factors": lower_risk_factors,
+
+        "business_considerations": (
+
+            "The model identifies the listed higher-risk "
+            "and lower-risk factors associated with this "
+            "prediction. The final business decision "
+            "remains with a human decision-maker."
+        )
+    }
+
+    return response
+def validate_business_response(
+    response,
+    verified_payload
+):
+
+    violations = []
+
+    # --------------------------------
+    # Validate model values
+    # --------------------------------
+
+    summary = response[
+        "risk_summary"
+    ].lower()
+
+    probability = str(
+        verified_payload["churn_probability"]
+    )
+
+    threshold = str(
+        verified_payload["threshold"]
+    )
+
+    prediction = verified_payload[
+        "prediction"
+    ].lower()
+
+    risk_level = verified_payload[
+        "risk_level"
+    ].lower()
+
+
+    if probability not in summary:
+
+        violations.append(
+            "Incorrect or missing churn probability"
+        )
+
+
+    if threshold not in summary:
+
+        violations.append(
+            "Incorrect or missing decision threshold"
+        )
+
+
+    if prediction not in summary:
+
+        violations.append(
+            "Incorrect or missing prediction"
+        )
+
+
+    if risk_level not in summary:
+
+        violations.append(
+            "Incorrect or missing risk level"
+        )
+
+
+    # --------------------------------
+    # Expected factors
+    # --------------------------------
+
+    expected_higher = [
+
+        item["feature"]
+
+        for item in verified_payload[
+            "higher_risk_signals"
+        ]
+    ]
+
+    expected_lower = [
+
+        item["feature"]
+
+        for item in verified_payload[
+            "lower_risk_signals"
+        ]
+    ]
+
+
+    # --------------------------------
+    # Validate higher-risk factors
+    # --------------------------------
+
+    if response[
+        "strongest_factors"
+    ] != expected_higher:
+
+        violations.append(
+            "Higher-risk factor integrity check failed"
+        )
+
+
+    # --------------------------------
+    # Validate lower-risk factors
+    # --------------------------------
+
+    if response[
+        "lower_risk_factors"
+    ] != expected_lower:
+
+        violations.append(
+            "Lower-risk factor integrity check failed"
+        )
+
+
+    # --------------------------------
+    # Forbidden phrases
+    # --------------------------------
+
+    forbidden_phrases = [
+
+        "within one year",
+
+        "within a year",
+
+        "will definitely churn",
+
+        "discount",
+
+        "offer",
+
+        "financial loss"
+    ]
+
+
+    full_response = " ".join([
+
+        response["risk_summary"],
+
+        " ".join(
+            response["strongest_factors"]
+        ),
+
+        " ".join(
+            response["lower_risk_factors"]
+        ),
+
+        response["business_considerations"]
+
+    ]).lower()
+
+
+    for phrase in forbidden_phrases:
+
+        if phrase in full_response:
+
+            violations.append(phrase)
+
+
+    return {
+
+        "approved": len(violations) == 0,
+
+        "violations": violations
+    }
 
 
 # ============================================================
@@ -601,7 +902,116 @@ if st.button(
             use_container_width=True,
             hide_index=True
         )
+    # ========================================================
+    # VERIFIED BUSINESS COMMUNICATION
+    # ========================================================
 
+    st.divider()
+
+    st.subheader(
+        "🤖 AI Business Communication & Safety Validation"
+    )
+
+
+    # --------------------------------
+    # Build verified ML payload
+    # --------------------------------
+
+    verified_payload = build_verified_payload(
+        customer_df
+    )
+
+
+    # --------------------------------
+    # Generate structured response
+    # --------------------------------
+
+    business_response = generate_business_response(
+        verified_payload
+    )
+
+
+    # --------------------------------
+    # Validate response
+    # --------------------------------
+
+    validation_result = validate_business_response(
+
+        business_response,
+
+        verified_payload
+
+    )
+
+
+    # --------------------------------
+    # Display validation status
+    # --------------------------------
+
+    if validation_result["approved"]:
+
+        st.success(
+            "AI response approved — "
+            "Verified ML output integrity check passed."
+        )
+
+    else:
+
+        st.error(
+            "AI response failed safety validation."
+        )
+
+        st.write(
+            validation_result["violations"]
+        )
+
+
+    # --------------------------------
+    # Display approved response
+    # --------------------------------
+
+    if validation_result["approved"]:
+
+        st.markdown(
+            "### Risk Summary"
+        )
+
+        st.write(
+            business_response["risk_summary"]
+        )
+
+
+        st.markdown(
+            "### Strongest Higher-Risk Factors"
+        )
+
+        for factor in business_response[
+            "strongest_factors"
+        ]:
+
+            st.write(f"• {factor}")
+
+
+        st.markdown(
+            "### Lower-Risk Factors"
+        )
+
+        for factor in business_response[
+            "lower_risk_factors"
+        ]:
+
+            st.write(f"• {factor}")
+
+
+        st.markdown(
+            "### Business Considerations"
+        )
+
+        st.write(
+            business_response[
+                "business_considerations"
+            ]
+        )
 
     # ========================================================
     # DISCLAIMER
