@@ -550,7 +550,272 @@ def validate_business_response(
 # ============================================================
 # STREAMLIT INTERFACE
 # ============================================================
+# ========================================================
+# PROJECT KNOWLEDGE BASE
+# ========================================================
 
+PROJECT_KNOWLEDGE = {
+
+    "model_selection": """
+Logistic Regression was selected as the final model because
+the business objective prioritized identifying as many actual
+churners as possible. At the final decision threshold of 0.35,
+Logistic Regression achieved higher recall and fewer false
+negatives than Random Forest in the final comparison.
+""",
+
+    "final_model": """
+The final model is Logistic Regression with C=1 and
+class_weight='balanced'. The classification threshold was set
+to 0.35 instead of the default 0.50.
+""",
+
+    "recall": """
+Recall was prioritized because missing a customer who is
+actually likely to churn is considered more costly than
+contacting some customers who may ultimately stay.
+""",
+
+    "threshold": """
+The threshold was selected using model performance and an
+illustrative business-cost analysis. A threshold of 0.35 provided
+a strong balance between identifying churners and controlling
+unnecessary false-positive interventions.
+""",
+
+    "model_comparison": """
+In the final comparison at a threshold of 0.35, Logistic
+Regression achieved approximately 90.37% recall compared with
+83.96% for Random Forest. Logistic Regression also produced
+fewer false negatives: 36 compared with 60 for Random Forest.
+
+Random Forest had stronger precision and a slightly higher F1
+score, but Logistic Regression was selected because the primary
+business objective was minimizing missed churners.
+""",
+
+    "limitations": """
+The model provides a probability-based prediction rather than
+certainty. The prediction depends on the available customer
+features and historical data used for training. The output should
+support, rather than replace, human business decision-making.
+"""
+}
+
+# ========================================================
+# INTERACTIVE DECISION-SUPPORT ASSISTANT
+# ========================================================
+
+def answer_business_question(question, verified_payload):
+
+    question_lower = question.lower()
+
+    # ----------------------------------------------------
+    # Why was Logistic Regression selected?
+    # ----------------------------------------------------
+
+    if any(word in question_lower for word in [
+        "why choose",
+        "why selected",
+        "why logistic",
+        "model chosen",
+        "choose the model",
+        "selected model"
+    ]):
+
+        return (
+            PROJECT_KNOWLEDGE["model_selection"]
+            + "\n\n"
+            + PROJECT_KNOWLEDGE["final_model"]
+        )
+
+
+    # ----------------------------------------------------
+    # Recall
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "recall",
+        "missed churner",
+        "false negative",
+        "fn"
+    ]):
+
+        return PROJECT_KNOWLEDGE["recall"]
+
+
+    # ----------------------------------------------------
+    # Threshold
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "threshold",
+        "0.35",
+        "decision boundary",
+        "cutoff"
+    ]):
+
+        return (
+            PROJECT_KNOWLEDGE["threshold"]
+            + "\n\n"
+            + f"The threshold used for this prediction is "
+              f"{verified_payload['threshold']}."
+        )
+
+
+    # ----------------------------------------------------
+    # Random Forest comparison
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "random forest",
+        "why not random",
+        "compare models",
+        "model comparison"
+    ]):
+
+        return PROJECT_KNOWLEDGE["model_comparison"]
+
+
+    # ----------------------------------------------------
+    # Why is this customer high risk?
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "why high risk",
+        "why is this customer",
+        "why did the customer",
+        "why churn",
+        "why this prediction"
+    ]):
+
+        higher_factors = [
+
+            item["feature"]
+
+            for item in verified_payload[
+                "higher_risk_signals"
+            ]
+        ]
+
+        return (
+            f"This customer has a churn probability of "
+            f"{verified_payload['churn_probability']:.2%}, "
+            f"which is above the decision threshold of "
+            f"{verified_payload['threshold']}. "
+            f"The prediction is therefore "
+            f"{verified_payload['prediction']} with a "
+            f"{verified_payload['risk_level']} risk level.\n\n"
+
+            f"The strongest factors associated with higher "
+            f"predicted churn risk are: "
+            f"{', '.join(higher_factors)}.\n\n"
+
+            "These factors are associations identified by the "
+            "model for this prediction and should not be "
+            "interpreted as proving direct causation."
+        )
+
+
+    # ----------------------------------------------------
+    # Risk factors
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "risk factor",
+        "higher risk",
+        "factors",
+        "explainability",
+        "contribution"
+    ]):
+
+        higher_factors = [
+
+            item["feature"]
+
+            for item in verified_payload[
+                "higher_risk_signals"
+            ]
+        ]
+
+        lower_factors = [
+
+            item["feature"]
+
+            for item in verified_payload[
+                "lower_risk_signals"
+            ]
+        ]
+
+        return (
+            "Factors associated with higher predicted churn "
+            "risk:\n\n• "
+            + "\n• ".join(higher_factors)
+            + "\n\nFactors associated with lower predicted "
+              "churn risk:\n\n• "
+            + "\n• ".join(lower_factors)
+        )
+
+
+    # ----------------------------------------------------
+    # Probability
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "probability",
+        "91.37",
+        "what does",
+        "prediction mean"
+    ]):
+
+        return (
+            f"The model estimates a churn probability of "
+            f"{verified_payload['churn_probability']:.2%}. "
+            f"This is above the decision threshold of "
+            f"{verified_payload['threshold']}, resulting in "
+            f"a prediction of {verified_payload['prediction']} "
+            f"and a {verified_payload['risk_level']} risk level. "
+            f"The probability is an estimate, not a guarantee "
+            f"that the customer will churn."
+        )
+
+
+    # ----------------------------------------------------
+    # Model limitations
+    # ----------------------------------------------------
+
+    elif any(word in question_lower for word in [
+        "limitation",
+        "trust",
+        "reliable",
+        "accuracy",
+        "limitations"
+    ]):
+
+        return PROJECT_KNOWLEDGE["limitations"]
+
+
+    # ----------------------------------------------------
+    # Default grounded response
+    # ----------------------------------------------------
+
+    else:
+
+        return (
+            "I can answer questions based on the verified "
+            "customer prediction and the documented machine-"
+            "learning decisions in this project.\n\n"
+
+            "Try asking:\n\n"
+
+            "• Why was Logistic Regression selected?\n"
+            "• Why is recall important?\n"
+            "• Why was the threshold set to 0.35?\n"
+            "• Why is this customer High Risk?\n"
+            "• Why not Random Forest?\n"
+            "• What are the model limitations?"
+        )
+        
 st.title("📊 Telco Customer Churn Prediction System")
 
 st.write(
@@ -918,8 +1183,10 @@ if st.button(
     # --------------------------------
 
     verified_payload = build_verified_payload(
-        customer_df
+    customer_df
     )
+
+    st.session_state["verified_payload"] = verified_payload
 
 
     # --------------------------------
@@ -1012,6 +1279,69 @@ if st.button(
                 "business_considerations"
             ]
         )
+
+    # ========================================================
+# INTERACTIVE DECISION-SUPPORT ASSISTANT
+# ========================================================
+
+st.divider()
+
+st.subheader(
+    "💬 Ask the Churn Decision-Support Assistant"
+)
+
+st.write(
+    "Ask questions about the current prediction, model "
+    "selection, threshold, recall, model comparison, or "
+    "project methodology."
+)
+
+st.caption(
+    "Example: Why was Logistic Regression selected?"
+)
+
+
+# --------------------------------------------------------
+# Check whether a prediction exists
+# --------------------------------------------------------
+
+if "verified_payload" in st.session_state:
+
+    question = st.chat_input(
+        "Ask a question about the churn prediction or model..."
+    )
+
+
+    if question:
+
+        # Display user question
+        with st.chat_message("user"):
+
+            st.write(question)
+
+
+        # Generate grounded answer
+        answer = answer_business_question(
+
+            question,
+
+            st.session_state["verified_payload"]
+
+        )
+
+
+        # Display assistant response
+        with st.chat_message("assistant"):
+
+            st.write(answer)
+
+
+else:
+
+    st.info(
+        "Please generate a customer prediction first before "
+        "asking questions."
+    )
 
     # ========================================================
     # DISCLAIMER
