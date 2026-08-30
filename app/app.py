@@ -144,7 +144,49 @@ def build_verified_payload(customer_data):
     }
     return verified_payload
 
+def process_batch(df):
+    """
+    Run predictions on a whole dataframe of customers.
+    Returns a new dataframe with prediction columns added.
+    """
+    required_columns = [
+        "gender", "SeniorCitizen", "Partner", "Dependents", "tenure",
+        "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity",
+        "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV",
+        "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod",
+        "MonthlyCharges", "TotalCharges"
+    ]
 
+    # Check for missing columns
+    missing = [col for col in required_columns if col not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required columns: {', '.join(missing)}")
+
+    # Keep only the required columns (and preserve order)
+    input_df = df[required_columns].copy()
+
+    # Make predictions
+    probabilities = best_lr_model.predict_proba(input_df)[:, 1]
+    predictions = ["Yes" if p >= THRESHOLD else "No" for p in probabilities]
+    risk_levels = [classify_risk(p) for p in probabilities]
+
+    # Create results dataframe
+    results = df.copy()
+    results["Churn_Probability"] = [round(p, 4) for p in probabilities]
+    results["Prediction"] = predictions
+    results["Risk_Level"] = risk_levels
+
+    return results
+
+
+def convert_df_to_excel(df):
+    """Convert dataframe to Excel bytes for download"""
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        df.to_excel(writer, index=False, sheet_name="Batch Predictions")
+    output.seek(0)
+    return output
+    
 def create_excel_report(assessment, clean_explanation, customer_df):
     """Create an Excel report in memory"""
     output = BytesIO()
@@ -500,7 +542,68 @@ PROJECT_KNOWLEDGE = {
         )
     }
 }
+# ============================================================
+# BATCH PREDICTION SECTION
+# ============================================================
+st.markdown("---")
+st.subheader("📂 Batch Prediction")
 
+st.write(
+    "Upload a CSV file containing multiple customers to get predictions for all of them at once. "
+    "The file must contain the same columns used in the single prediction form."
+)
+
+# Show required columns
+with st.expander("View required columns"):
+    st.code(
+        "gender, SeniorCitizen, Partner, Dependents, tenure, PhoneService, "
+        "MultipleLines, InternetService, OnlineSecurity, OnlineBackup, "
+        "DeviceProtection, TechSupport, StreamingTV, StreamingMovies, "
+        "Contract, PaperlessBilling, PaymentMethod, MonthlyCharges, TotalCharges"
+    )
+
+uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+
+if uploaded_file is not None:
+    try:
+        batch_df = pd.read_csv(uploaded_file)
+
+        st.write("### Preview of uploaded data")
+        st.dataframe(batch_df.head(), use_container_width=True)
+
+        if st.button("Run Batch Prediction", type="primary"):
+            with st.spinner("Running predictions..."):
+                results_df = process_batch(batch_df)
+
+            st.success(f"Successfully processed {len(results_df)} customers!")
+
+            st.write("### Prediction Results")
+            st.dataframe(results_df, use_container_width=True)
+
+            # Summary
+            st.write("### Summary")
+            summary_col1, summary_col2, summary_col3 = st.columns(3)
+
+            with summary_col1:
+                st.metric("Total Customers", len(results_df))
+            with summary_col2:
+                churn_count = (results_df["Prediction"] == "Yes").sum()
+                st.metric("Predicted Churners", churn_count)
+            with summary_col3:
+                high_risk = (results_df["Risk_Level"] == "High").sum()
+                st.metric("High Risk Customers", high_risk)
+
+            # Download button
+            excel_data = convert_df_to_excel(results_df)
+            st.download_button(
+                label="📥 Download Batch Results (Excel)",
+                data=excel_data,
+                file_name=f"batch_churn_predictions_{datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y%m%d_%H%M%S')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+
+    except Exception as e:
+        st.error(f"Error processing file: {e}")
 # ============================================================
 # AI ASSISTANT
 # ============================================================
