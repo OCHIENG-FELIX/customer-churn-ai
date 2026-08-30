@@ -7,4 +7,4 @@ openpyxl
 xlsxwriter
 fpdf2
 seaborn
-matplotlib.pyplot
+matplotlib
