@@ -6,6 +6,7 @@ import os
 from io import BytesIO
 from fpdf import FPDF
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -163,7 +164,7 @@ def create_excel_report(assessment, clean_explanation, customer_df):
                 f"{assessment['threshold']:.2f}",
                 assessment["prediction"],
                 assessment["risk_level"],
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                datetime.now(ZoneInfo("Africa/Nairobi")).strftime("%Y-%m-%d %H:%M:%S")
             ]
         }
         pd.DataFrame(summary_data).to_excel(writer, sheet_name="Prediction Summary", index=False)
@@ -198,7 +199,7 @@ def create_pdf_report(assessment, clean_explanation, customer_df):
 
     # Timestamp
     pdf.set_font("Helvetica", "", 10)
-    pdf.cell(0, 8, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True)
+    pdf.cell(0, 8, f"Generated on: {datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y-%m-%d %H:%M:%S')}", ln=True)
     pdf.ln(5)
 
     # Prediction Results
@@ -769,7 +770,7 @@ if st.button("Predict Customer Churn", type="primary"):
         st.download_button(
             label="Download Excel Report",
             data=excel_file,
-            file_name=f"churn_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            file_name=f"churn_report_{datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y%m%d_%H%M%S')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
@@ -778,7 +779,7 @@ if st.button("Predict Customer Churn", type="primary"):
         st.download_button(
             label="Download PDF Report",
             data=pdf_bytes,
-            file_name=f"churn_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+            file_name=f"churn_report_{datetime.now(ZoneInfo('Africa/Nairobi')).strftime('%Y%m%d_%H%M%S')}.pdf",
             mime="application/pdf"
         )
 # ============================================================
