@@ -24,7 +24,22 @@ The project goes beyond simply predicting churn. It combines:
 The final system separates the **machine-learning prediction** from the **generative-AI explanation**, ensuring that the LLM communicates verified model results rather than determining or changing them.
 
 ---
+# 🔗 Live Application
 
+Try the deployed application:
+
+👉 **[Launch the Telco Customer Churn AI App](https://telcocustomer-churn-ai-7f9yrrjlzgcr6dabkeyrgy.streamlit.app/)**
+
+The application allows users to:
+
+- Enter customer information
+- Generate a churn prediction
+- View churn probability and risk level
+- Review customer-level risk factors
+- View a business-readable explanation
+- Verify AI-generated communication through safety validation
+- Ask questions about the project's methodology and technical decisions
+- 
 ## 🎯 Business Problem
 
 Customer churn can affect customer retention and recurring business relationships.
@@ -379,6 +394,28 @@ The system detects unsupported claims such as:
 * Unsupported business actions
 
 ---
+# 💬 Project AI Assistant
+
+The application also includes a Project AI Assistant designed to answer questions about the Telco Customer Churn project.
+
+Users can ask questions about areas such as:
+
+- Why Logistic Regression was selected
+- Which models were evaluated
+- Why recall was considered important
+- How the decision threshold was selected
+- How customer-level explainability works
+- How preprocessing was performed
+- What evaluation metrics were used
+- How the AI safety validation system works
+- Why the LLM does not control the ML prediction
+- The difference between prediction, explanation, and validation
+
+The assistant is designed as a project knowledge and communication layer.
+
+Its role is to explain the methodology and decisions behind the project rather than modify verified machine-learning results.
+
+This provides an additional interactive layer that allows users, recruiters, and stakeholders to explore the technical and business reasoning behind the system.
 
 # 🔐 Verified Output Architecture
 
@@ -495,17 +532,32 @@ The validation layer determines whether the generated explanation is safe to pas
 
 ---
 
-# 🚀 Deployment Prototype
+# 🚀 Deployment
 
-A Streamlit application was developed as a deployment prototype.
+The Telco Customer Churn AI system is deployed as an interactive Streamlit application.
 
-The application is designed to provide an interface for interacting with the churn prediction system.
+## 🔗 Live Application
 
-A temporary Cloudflare Tunnel was also used during development to expose the application for testing.
+👉 **[Launch the Application](https://telcocustomer-churn-ai-7f9yrrjlzgcr6dabkeyrgy.streamlit.app/)**
 
-Because the deployment environment was temporary and resource-constrained, the Streamlit interface is treated as a **prototype deployment layer**, while the core ML, explainability, LLM, and validation pipeline remains the primary technical deliverable.
+The deployed application provides an interactive interface where users can:
 
----
+1. Enter customer information
+2. Generate a churn prediction
+3. View the churn probability
+4. View the selected decision threshold
+5. View the predicted churn class
+6. View the customer risk level
+7. Explore higher-risk and lower-risk model signals
+8. Review AI-generated business communication
+9. Verify that AI output passed the safety validation layer
+10. Ask questions about the project methodology
+
+The deployment demonstrates how the machine-learning model, explainability system, AI communication layer, and validation controls can be integrated into a single user-facing application.
+
+# 📸 Application Preview
+
+![Telco Customer Churn AI Application](screenshots/streamlit_app.png)
 
 # 🗂️ Project Structure
 
@@ -654,22 +706,34 @@ GitHub:
 
 This project demonstrates an end-to-end progression from:
 
-**Raw customer data**
+Raw Customer Data
 
-→ **Data analysis**
+→ Exploratory Data Analysis
 
-→ **Machine learning**
+→ Data Preprocessing
 
-→ **Model evaluation**
+→ Machine Learning
 
-→ **Model tuning**
+→ Model Evaluation
 
-→ **Customer-level explainability**
+→ Cross-Validation & Hyperparameter Tuning
 
-→ **Local generative AI**
+→ Decision Threshold Analysis
 
-→ **AI safety validation**
+→ Customer-Level Explainability
 
-→ **Deployment prototype**
+→ Local Generative AI Communication
 
-The key objective is not simply to predict churn, but to demonstrate how a machine-learning prediction can be transformed into an interpretable and safety-validated business communication workflow.
+→ AI Safety Validation
+
+→ Verified ML Output Integrity
+
+→ Interactive Streamlit Deployment
+
+→ Project AI Assistant
+
+The project demonstrates how machine learning and generative AI can be integrated while maintaining a clear separation between:
+
+**Prediction → Explanation → Validation → Human Decision-Making**
+
+The machine-learning model remains the source of truth for predictions, while the AI layer is used for communication and project-level interaction.
