@@ -21,12 +21,13 @@ st.set_page_config(
 # LOAD MODEL AND FEATURE NAME MAP
 # ============================================================
 @st.cache_resource
+@st.cache_resource
 def load_resources():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    PROJECT_DIR = os.path.dirname(BASE_DIR)
 
-    model_path = os.path.join(PROJECT_DIR, "models", "churn_model.pkl")
-    feature_map_path = os.path.join(PROJECT_DIR, "models", "feature_name_map.pkl")
+    BASE_DIR = Path(__file__).resolve().parent
+
+    model_path = BASE_DIR / "models" / "churn_model.pkl"
+    feature_map_path = BASE_DIR / "models" / "feature_name_map.pkl"
 
     model = joblib.load(model_path)
     feature_name_map = joblib.load(feature_map_path)
