@@ -21,19 +21,30 @@ st.set_page_config(
 # LOAD MODEL AND FEATURE NAME MAP
 # ============================================================
 @st.cache_resource
-@st.cache_resource
 def load_resources():
 
-    BASE_DIR = Path(__file__).resolve().parent
+    # app.py is inside /app
+    # models is one level above /app
+    PROJECT_DIR = Path(__file__).resolve().parent.parent
 
-    model_path = BASE_DIR / "models" / "churn_model.pkl"
-    feature_map_path = BASE_DIR / "models" / "feature_name_map.pkl"
+    model_path = PROJECT_DIR / "models" / "churn_model.pkl"
+    feature_map_path = PROJECT_DIR / "models" / "feature_name_map.pkl"
+
+    # Verify that the files exist before loading
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"Model file not found: {model_path}"
+        )
+
+    if not feature_map_path.exists():
+        raise FileNotFoundError(
+            f"Feature map file not found: {feature_map_path}"
+        )
 
     model = joblib.load(model_path)
     feature_name_map = joblib.load(feature_map_path)
 
     return model, feature_name_map
-
 try:
     best_lr_model, FEATURE_NAME_MAP = load_resources()
 except Exception as e:
