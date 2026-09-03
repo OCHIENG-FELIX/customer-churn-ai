@@ -1,6 +1,6 @@
 streamlit
 pandas
-joblib==1.4.2
+joblib
 scikit-learn==1.6.1
 numpy
 
