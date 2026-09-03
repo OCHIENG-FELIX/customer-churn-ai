@@ -3,5 +3,5 @@ pandas
 joblib
 scikit-learn==1.6.1
 numpy
-
-
+fpdf2
+xlsxwriter
