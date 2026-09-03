@@ -557,7 +557,7 @@ The deployment demonstrates how the machine-learning model, explainability syste
 
 # 📸 Application Preview
 
-![Telco Customer Churn AI Application](screenshots/streamlit_app.png)
+![Telco Customer Churn AI Application](screenshots/dashboard_churn.png)
 
 # 🗂️ Project Structure
 
