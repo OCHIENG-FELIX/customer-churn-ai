@@ -28,7 +28,7 @@ The final system separates the **machine-learning prediction** from the **genera
 
 Try the deployed application:
 
-👉 **[Launch the Telco Customer Churn AI App](https://telcocustomer-churn-ai-7f9yrrjlzgcr6dabkeyrgy.streamlit.app/)**
+👉 **[Launch the Telco Customer Churn AI App](https://ochieng-felix-telco-customer-churn-ai-appapp-qezax4.streamlit.app/)**
 
 The application allows users to:
 
@@ -538,7 +538,7 @@ The Telco Customer Churn AI system is deployed as an interactive Streamlit appli
 
 ## 🔗 Live Application
 
-👉 **[Launch the Application](https://telcocustomer-churn-ai-7f9yrrjlzgcr6dabkeyrgy.streamlit.app/)**
+👉 **[Launch the Application](https://ochieng-felix-telco-customer-churn-ai-appapp-qezax4.streamlit.app/)**
 
 The deployed application provides an interactive interface where users can:
 
